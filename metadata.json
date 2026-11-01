@@ -1,0 +1,8 @@
+{
+  "name": "StudyBuddy - AI Adaptive Learning Platform",
+  "description": "AI-powered adaptive learning platform for Classes 6–10 with Earn-to-Advance pathways, Hinglish doubt solver, and mastery-based progression.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

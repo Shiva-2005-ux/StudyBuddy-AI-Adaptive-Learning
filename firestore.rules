@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.:]+$');
+    }
+
+    // Student profile
+    match /students/{studentId} {
+      allow get: if isOwner(studentId);
+      allow list: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create: if isOwner(studentId)
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() <= 150
+        && request.resource.data.selectedClass in ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10'];
+      allow update: if isOwner(studentId)
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.email == resource.data.email;
+      allow delete: if false;
+    }
+
+    // Student Progress
+    match /studentProgress/{progressId} {
+      allow get: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.topicId is string && request.resource.data.topicId.size() <= 128;
+      allow update: if isSignedIn()
+        && resource.data.studentId == request.auth.uid
+        && request.resource.data.studentId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Topic Unlocks (Mastery progression)
+    match /topicUnlocks/{unlockId} {
+      allow get: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create, update: if isSignedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.topicSetId is string && request.resource.data.topicSetId.size() <= 128;
+      allow delete: if false;
+    }
+
+    // Quiz Attempts
+    match /quizAttempts/{attemptId} {
+      allow get: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.score is number
+        && request.resource.data.percentage is number;
+      allow update, delete: if false;
+    }
+
+    // Community Discussions
+    match /communityPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 100
+        && request.resource.data.title is string && request.resource.data.title.size() <= 200
+        && request.resource.data.content is string && request.resource.data.content.size() <= 2000;
+      allow update: if isSignedIn()
+        && (resource.data.studentId == request.auth.uid || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'repliesCount']));
+      allow delete: if isSignedIn() && resource.data.studentId == request.auth.uid;
+
+      match /replies/{replyId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn()
+          && request.resource.data.studentId == request.auth.uid
+          && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 100
+          && request.resource.data.content is string && request.resource.data.content.size() <= 2000;
+        allow update, delete: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      }
+    }
+  }
+}

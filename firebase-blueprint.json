@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Student profile with selected class and personal details",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "selectedClass": { "type": "string", "enum": ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"] },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "lastLoginAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["studentId", "fullName", "email", "selectedClass", "createdAt"]
+    },
+    "StudentProgress": {
+      "title": "StudentProgress",
+      "description": "Progress tracking for completed topics",
+      "type": "object",
+      "properties": {
+        "progressId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "topicId": { "type": "string", "maxLength": 128 },
+        "completed": { "type": "boolean" },
+        "completedAt": { "type": "string", "maxLength": 64 },
+        "practiceScore": { "type": "number" }
+      },
+      "required": ["progressId", "studentId", "topicId", "completed", "completedAt"]
+    },
+    "TopicUnlock": {
+      "title": "TopicUnlock",
+      "description": "Tracks unlocked topic sets governed by >60% quiz mastery",
+      "type": "object",
+      "properties": {
+        "unlockId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "topicSetId": { "type": "string", "maxLength": 128 },
+        "isUnlocked": { "type": "boolean" },
+        "unlockedAt": { "type": "string", "maxLength": 64 },
+        "unlockedByScore": { "type": "number" }
+      },
+      "required": ["unlockId", "studentId", "topicSetId", "isUnlocked", "unlockedAt"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Logged quiz attempt with score, percentage, and weak concepts",
+      "type": "object",
+      "properties": {
+        "attemptId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "topicSetId": { "type": "string", "maxLength": 128 },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "percentage": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "attemptedAt": { "type": "string", "maxLength": 64 },
+        "weakConcepts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["attemptId", "studentId", "topicSetId", "score", "total", "percentage", "passed", "attemptedAt"]
+    },
+    "CommunityPost": {
+      "title": "CommunityPost",
+      "description": "Student peer discussion post without exposing email",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "studentClass": { "type": "string", "maxLength": 30 },
+        "subjectId": { "type": "string", "maxLength": 64 },
+        "chapterId": { "type": "string", "maxLength": 64 },
+        "topicId": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "likesCount": { "type": "number" },
+        "repliesCount": { "type": "number" }
+      },
+      "required": ["postId", "studentId", "authorName", "studentClass", "subjectId", "title", "content", "createdAt"]
+    },
+    "CommunityReply": {
+      "title": "CommunityReply",
+      "description": "Peer response to community discussion",
+      "type": "object",
+      "properties": {
+        "replyId": { "type": "string", "maxLength": 128 },
+        "postId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["replyId", "postId", "studentId", "authorName", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Private student account and class enrollment"
+    },
+    "/studentProgress/{progressId}": {
+      "schema": "StudentProgress",
+      "description": "Student topic completion records"
+    },
+    "/topicUnlocks/{unlockId}": {
+      "schema": "TopicUnlock",
+      "description": "Records of unlocked topic sets earned via >60% quiz score"
+    },
+    "/quizAttempts/{attemptId}": {
+      "schema": "QuizAttempt",
+      "description": "Historical quiz attempts and evaluation results"
+    },
+    "/communityPosts/{postId}": {
+      "schema": "CommunityPost",
+      "description": "Public peer discussion posts"
+    },
+    "/communityPosts/{postId}/replies/{replyId}": {
+      "schema": "CommunityReply",
+      "description": "Replies to community posts"
+    }
+  }
+}
